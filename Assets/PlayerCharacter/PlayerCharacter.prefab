@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.8, y: 0.76029, z: 0.8}
+  m_LocalScale: {x: 0.67272, y: 0.58972245, z: 0.67272}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7738576792924951775}
@@ -267,11 +267,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d690de6a85436f408636b4994643e4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputActions: {fileID: -944628639613478452, guid: 74f82b7aa39968e4ca151075585b7e5f, type: 3}
   currentVcam: {fileID: 0}
-  maxSpeed: 6
-  gravityScale: 1
+  camAngleNormal: 30
+  camAngleFocus: 50
+  focusTransitionTime: 0.3
+  rotateTransitionTime: 0.5
+  isFocus: 0
+  walkSpeed: 6
+  runSpeed: 8
+  currentSpeed: 0
   input: {x: 0, y: 0}
   velocity: {x: 0, y: 0, z: 0}
-  isGrounded: 0
+  isRunning: 0
   turnSmoothTime: 0.1
