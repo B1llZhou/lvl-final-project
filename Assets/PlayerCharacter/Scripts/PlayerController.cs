@@ -19,6 +19,10 @@ public class PlayerController : MonoBehaviour {
     public bool isFocus;
     private bool cameraRotateState; // 0 for facing northeast, 1 for facing northwest
 
+    public float sensitivityX = 8f;
+    public bool debugCamera;
+    private float mouseX;
+
     [Header("Components")]
     private NavMeshAgent agent;
 
@@ -48,9 +52,12 @@ public class PlayerController : MonoBehaviour {
 
     private void Update() {
         MoveByNavMesh();
+        if(debugCamera) FreeLook();
     }
 
     private void MoveByNavMesh() {
+        currentSpeed = isRunning ? runSpeed : walkSpeed;
+        
         if (input.magnitude >= 0.1f) {
             // Rotate 
             var cameraAngleOffset = currentVcam.eulerAngles;
@@ -61,8 +68,8 @@ public class PlayerController : MonoBehaviour {
         
             // Move 
             moveDirection = Quaternion.Euler(0, cameraAngleOffset.y, 0) * new Vector3(input.x, 0f, input.y);
-            velocity.x = moveDirection.x * walkSpeed;
-            velocity.z = moveDirection.z * walkSpeed;
+            velocity.x = moveDirection.x * currentSpeed;
+            velocity.z = moveDirection.z * currentSpeed;
         }
         else {
             velocity.x = 0;
@@ -84,6 +91,14 @@ public class PlayerController : MonoBehaviour {
         currentVcam.DORotate(targetAngle, rotateTransitionTime);
         cameraRotateState = !cameraRotateState;
     }
+
+    private void FreeLook() {
+        var currentX = currentVcam.localEulerAngles.x;
+        var currentY = currentVcam.localEulerAngles.y;
+        var currentZ = currentVcam.localEulerAngles.z;
+        currentVcam.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
+    }
+    
 
     public void OnMove(InputAction.CallbackContext context) {
         input = context.ReadValue<Vector2>();
@@ -111,5 +126,14 @@ public class PlayerController : MonoBehaviour {
 
     public void OnExitGame(InputAction.CallbackContext context) {
         if (context.started) Application.Quit();
+    }
+
+    public void OnLookX(InputAction.CallbackContext context) {
+        mouseX = context.ReadValue<float>();
+    }
+
+    public void OnSprint(InputAction.CallbackContext context) {
+        if (context.performed) isRunning = true;
+        else if (context.canceled) isRunning = false;
     }
 }
