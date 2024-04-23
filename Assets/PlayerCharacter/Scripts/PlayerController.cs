@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using DG.Tweening;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -11,6 +12,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour {
     [Header("Camera")]
+    public CinemachineBrain cinemachineBrain;
     public Transform currentVcam;
     public float camAngleNormal = 30f;
     public float camAngleFocus = 50f;
@@ -19,9 +21,9 @@ public class PlayerController : MonoBehaviour {
     public bool isFocus;
     private bool cameraRotateState; // 0 for facing northeast, 1 for facing northwest
 
-    public float sensitivityX = 8f;
-    public bool debugCamera;
-    private float mouseX;
+    // public float sensitivityX = 8f;
+    // public bool debugCamera;
+    // private float mouseX;
 
     [Header("Components")]
     private NavMeshAgent agent;
@@ -52,7 +54,7 @@ public class PlayerController : MonoBehaviour {
 
     private void Update() {
         MoveByNavMesh();
-        if(debugCamera) FreeLook();
+        currentVcam = cinemachineBrain.ActiveVirtualCamera.VirtualCameraGameObject.transform;
     }
 
     private void MoveByNavMesh() {
@@ -79,11 +81,11 @@ public class PlayerController : MonoBehaviour {
         agent.Move(velocity * Time.deltaTime);
     }
 
-    private void SetCameraFocus(bool focusState) {
-        var targetAngle = currentVcam.eulerAngles;
-        targetAngle.x = focusState ? camAngleFocus : camAngleNormal;
-        currentVcam.DORotate(targetAngle, focusTransitionTime);
-    }
+    // private void SetCameraFocus(bool focusState) {
+    //     var targetAngle = currentVcam.eulerAngles;
+    //     targetAngle.x = focusState ? camAngleFocus : camAngleNormal;
+    //     currentVcam.DORotate(targetAngle, focusTransitionTime);
+    // }
 
     private void SetCameraRotate() {
         var targetAngle = currentVcam.eulerAngles;
@@ -92,12 +94,12 @@ public class PlayerController : MonoBehaviour {
         cameraRotateState = !cameraRotateState;
     }
 
-    private void FreeLook() {
-        var currentX = currentVcam.localEulerAngles.x;
-        var currentY = currentVcam.localEulerAngles.y;
-        var currentZ = currentVcam.localEulerAngles.z;
-        currentVcam.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
-    }
+    // private void FreeLook() {
+    //     var currentX = currentVcam.localEulerAngles.x;
+    //     var currentY = currentVcam.localEulerAngles.y;
+    //     var currentZ = currentVcam.localEulerAngles.z;
+    //     currentVcam.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
+    // }
     
 
     public void OnMove(InputAction.CallbackContext context) {
@@ -105,16 +107,16 @@ public class PlayerController : MonoBehaviour {
         moveDirection = new Vector3(input.x, 0f, input.y).normalized;
     }
 
-    public void OnFocus(InputAction.CallbackContext context) {
-        if (context.performed) {
-            SetCameraFocus(true);
-            isFocus = true;
-        }
-        else if (context.canceled) {
-            SetCameraFocus(false);
-            isFocus = false;
-        }
-    }
+    // public void OnFocus(InputAction.CallbackContext context) {
+    //     if (context.performed) {
+    //         SetCameraFocus(true);
+    //         isFocus = true;
+    //     }
+    //     else if (context.canceled) {
+    //         SetCameraFocus(false);
+    //         isFocus = false;
+    //     }
+    // }
 
     public void OnCameraRotate(InputAction.CallbackContext context) {
         if (context.started) SetCameraRotate();
@@ -128,9 +130,9 @@ public class PlayerController : MonoBehaviour {
         if (context.started) Application.Quit();
     }
 
-    public void OnLookX(InputAction.CallbackContext context) {
-        mouseX = context.ReadValue<float>();
-    }
+    // public void OnLookX(InputAction.CallbackContext context) {
+    //     mouseX = context.ReadValue<float>();
+    // }
 
     public void OnSprint(InputAction.CallbackContext context) {
         if (context.performed) isRunning = true;

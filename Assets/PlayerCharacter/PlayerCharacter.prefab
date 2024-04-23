@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8066393898078566172}
   - component: {fileID: 2947239641811846084}
   - component: {fileID: 3279694810170794678}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 7738576792924951775}
   - component: {fileID: 2110671275670475229}
   - component: {fileID: 7730780598715135780}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -176,7 +176,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1700874126858826379}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PlayerModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -210,9 +210,9 @@ GameObject:
   - component: {fileID: 1986974897585777112}
   - component: {fileID: 1822336219518626242}
   - component: {fileID: 8328522226123310165}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PlayerCharacter
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -242,7 +242,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 7981643607189899648}
   m_Enabled: 1
   m_AgentTypeID: -1372625422
-  m_Radius: 0.5
+  m_Radius: 0.39
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -251,8 +251,8 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0.88
+  m_Height: 1.25
+  m_BaseOffset: 0.61
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
 --- !u!114 &8328522226123310165
@@ -269,7 +269,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentVcam: {fileID: 0}
   camAngleNormal: 30
-  camAngleFocus: 50
+  camAngleFocus: 45
   focusTransitionTime: 0.3
   rotateTransitionTime: 0.5
   isFocus: 0

@@ -4,32 +4,94 @@ using System.Collections.Generic;
 using Cinemachine;
 using DG.Tweening;
 using Unity.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class CameraManager : MonoBehaviour {
     [Header("Components")]
-    public Transform currentVcam;
+    public GameObject currentVCam;
+    public Camera mainCam;
+    private CinemachineBrain brain;
+
+    [Header("Virtual Cameras")]
+    public CinemachineVirtualCamera[] vCamList;
 
     [Header("Settings")]
-    public float camAngleNormal = 30f;
-    public float camAngleFocus = 50f;
+    public float normalRotX = 30f;
+    public float focusRotX = 50f;
     public float transitionTime = 0.3f;
-    
-    private void SetCameraFocus(bool isFocus) {
-        var targetAngle = currentVcam.eulerAngles;
-        targetAngle.x = isFocus ? camAngleFocus : camAngleNormal;
 
-        currentVcam.DORotate(targetAngle, transitionTime);
+    [Header("Freelook Camera")]
+    public float sensitivityX = 8f;
+    public bool debugCamera;
+    private float mouseX;
+
+    [Header("Current Info")]
+    public bool isFocus;
+
+    private void Awake() {
+        brain = mainCam.GetComponent<CinemachineBrain>();
+    }
+
+    private void Start() {
+        vCamList = FindObjectsOfType<CinemachineVirtualCamera>();
+        if (vCamList != null) {
+            foreach (var cam in vCamList) {
+                cam.Priority = 10;
+            }
+        }
+    }
+
+    private void Update() {
+        if (debugCamera) FreeLook();
+        if (brain != null) currentVCam = brain.ActiveVirtualCamera.VirtualCameraGameObject;
+    }
+
+    private void SetCameraFocus(bool isFocus) {
+        if (currentVCam == null) return;
+
+        var targetAngle = currentVCam.transform.eulerAngles;
+        targetAngle.x = isFocus ? focusRotX : normalRotX;
+
+        currentVCam.transform.DORotate(targetAngle, transitionTime);
+    }
+    
+    private void FreeLook() {
+        if (currentVCam == null) return;
+        
+        var vCamEuler = currentVCam.transform.localEulerAngles;
+        var currentX = vCamEuler.x;
+        var currentY = vCamEuler.y;
+        var currentZ = vCamEuler.z;
+        currentVCam.transform.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
+    }
+
+    public void SetActiveVCam(GameObject vCam) {
+        var cineMachine = vCam.GetComponent<CinemachineVirtualCamera>();
+        var setting = vCam.GetComponent<VirtualCameraSetting>();
+
+        foreach (var cam in vCamList) {
+            if (cam != cineMachine) cam.Priority = 10;
+        }
+
+        vCam.GetComponent<CinemachineVirtualCamera>().Priority = 20;
+        mainCam.cullingMask = setting.layerMask;
     }
     
     public void OnFocus(InputAction.CallbackContext context) {
-        // isFocus = context.ReadValue<float>() > 0f ? true : false;
         if (context.performed) {
             SetCameraFocus(true);
+            isFocus = true;
         }
         else if (context.canceled) {
             SetCameraFocus(false);
+            isFocus = false;
         }
+    }
+    
+    public void OnLookX(InputAction.CallbackContext context) {
+        mouseX = context.ReadValue<float>();
     }
 }
