@@ -25,8 +25,10 @@ public class CameraManager : MonoBehaviour {
 
     [Header("Freelook Camera")]
     public float sensitivityX = 8f;
+    [SerializeField][Range(0.01f, 0.1f)] public float sensitivityZoom = 0.3f;
     public bool debugCamera;
     private float mouseX;
+    private float zoom;
 
     [Header("Current Info")]
     public bool isFocus;
@@ -36,6 +38,7 @@ public class CameraManager : MonoBehaviour {
     }
 
     private void Start() {
+        Cursor.visible = false;
         vCamList = FindObjectsOfType<CinemachineVirtualCamera>();
         if (vCamList != null) {
             foreach (var cam in vCamList) {
@@ -66,6 +69,9 @@ public class CameraManager : MonoBehaviour {
         var currentY = vCamEuler.y;
         var currentZ = vCamEuler.z;
         currentVCam.transform.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
+
+        var vCam = currentVCam.GetComponent<CinemachineVirtualCamera>();
+        vCam.m_Lens.OrthographicSize = Mathf.Clamp(vCam.m_Lens.OrthographicSize + zoom * sensitivityZoom, 2.1f, 15f);
     }
 
     public void SetActiveVCam(GameObject vCam) {
@@ -93,5 +99,9 @@ public class CameraManager : MonoBehaviour {
     
     public void OnLookX(InputAction.CallbackContext context) {
         mouseX = context.ReadValue<float>();
+    }
+
+    public void OnZoom(InputAction.CallbackContext context) {
+        zoom = -context.ReadValue<Vector2>().y;
     }
 }
