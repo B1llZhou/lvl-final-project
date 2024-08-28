@@ -7,6 +7,8 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+
 
 [RequireComponent(typeof(NavMeshAgent))]
 
@@ -39,6 +41,18 @@ public class PlayerController : MonoBehaviour {
     public bool isRunning;
     private Vector3 moveDirection;
     
+    [Header("Dash Settings")]
+    private CharacterAbilityControl abilityControl;
+    private CharacterController controller;
+    public Text dashStatus;
+    public float dashTime = 0.1f;
+    public float dashSpeed = 10.0f;
+    public float speed = 3.0F;
+    public float rotateSpeed = 0.5F;
+    public int maxDashBeforeClearCombo = 2;
+    private Coroutine dashCo = null;
+    private int curDashCount = 0;
+    
     [Header("Others")]
     public float turnSmoothTime = 0.1f;
     private float turnSmoothVelocity;
@@ -50,6 +64,19 @@ public class PlayerController : MonoBehaviour {
     private void Start() {
         currentSpeed = walkSpeed;
         cameraRotateState = false;
+        
+        if (controller == null) { 
+            controller = gameObject.GetComponent<CharacterController>();
+        }
+        if (controller == null) {
+            controller = gameObject.AddComponent<CharacterController>();
+        }
+
+        if (abilityControl == null) {
+            abilityControl = gameObject.GetComponent<CharacterAbilityControl>();
+        }
+        
+        UpdateDashDisplay();
     }
 
     private void Update() {
@@ -79,6 +106,14 @@ public class PlayerController : MonoBehaviour {
         }
         
         agent.Move(velocity * Time.deltaTime);
+        
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            if (dashCo == null) {
+
+                dashCo = StartCoroutine(DashCoroutine());
+                AddDashCount();
+            }
+        }
     }
 
     // private void SetCameraFocus(bool focusState) {
@@ -137,5 +172,30 @@ public class PlayerController : MonoBehaviour {
     public void OnSprint(InputAction.CallbackContext context) {
         if (context.performed) isRunning = true;
         else if (context.canceled) isRunning = false;
+    }
+    
+    private IEnumerator DashCoroutine() {
+        float startTime = Time.time;
+        while (Time.time < startTime + dashTime) {
+            transform.position += transform.forward * dashSpeed * Time.deltaTime;
+            //transform.Translate(transform.TransformDirection(Vector3.forward) * dashSpeed * Time.deltaTime);
+            yield return null; 
+        }
+
+        dashCo = null;
+    }
+
+    private void AddDashCount() {
+        curDashCount++;
+        if (curDashCount >= maxDashBeforeClearCombo) {
+            curDashCount = 0;
+            abilityControl.ClearAbilitySeq();
+        }
+
+        UpdateDashDisplay();
+    }
+
+    public void UpdateDashDisplay() {
+        dashStatus.text = curDashCount.ToString();
     }
 }
