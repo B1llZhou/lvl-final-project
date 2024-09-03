@@ -48,6 +48,8 @@ public class CameraManager : MonoBehaviour {
     }
 
     private void Update() {
+        Cursor.visible = false;
+
         if (debugCamera) FreeLook();
         if (brain != null) currentVCam = brain.ActiveVirtualCamera.VirtualCameraGameObject;
     }
@@ -68,8 +70,11 @@ public class CameraManager : MonoBehaviour {
         var currentX = vCamEuler.x;
         var currentY = vCamEuler.y;
         var currentZ = vCamEuler.z;
+        
+        // Rotate
         currentVCam.transform.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
 
+        // Zoom
         var vCam = currentVCam.GetComponent<CinemachineVirtualCamera>();
         vCam.m_Lens.OrthographicSize = Mathf.Clamp(vCam.m_Lens.OrthographicSize + zoom * sensitivityZoom, 2.1f, 15f);
     }

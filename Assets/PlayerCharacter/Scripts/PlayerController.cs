@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
 using DG.Tweening;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 
 [RequireComponent(typeof(NavMeshAgent))]
@@ -52,6 +54,12 @@ public class PlayerController : MonoBehaviour {
     public int maxDashBeforeClearCombo = 2;
     private Coroutine dashCo = null;
     private int curDashCount = 0;
+
+    [Header("Target System")]
+    private GameObject[] targetList;
+    private GameObject focusTarget;
+    public float focusRange = 5f;
+    public bool hasTarget;
     
     [Header("Others")]
     public float turnSmoothTime = 0.1f;
@@ -75,25 +83,33 @@ public class PlayerController : MonoBehaviour {
         if (abilityControl == null) {
             abilityControl = gameObject.GetComponent<CharacterAbilityControl>();
         }
+
+        targetList ??= GameObject.FindGameObjectsWithTag("Enemy");
         
         UpdateDashDisplay();
     }
 
     private void Update() {
+        FindNearestTarget();
         MoveByNavMesh();
         currentVcam = cinemachineBrain.ActiveVirtualCamera.VirtualCameraGameObject.transform;
     }
 
     private void MoveByNavMesh() {
         currentSpeed = isRunning ? runSpeed : walkSpeed;
-        
+
         if (input.magnitude >= 0.1f) {
             // Rotate 
             var cameraAngleOffset = currentVcam.eulerAngles;
             var targetAngle = cameraAngleOffset.y + Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg;
             var currentAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity,
                 turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, currentAngle, 0f);
+            if (isFocus) {
+                if (focusTarget != null)
+                    transform.rotation = Quaternion.LookRotation(focusTarget.transform.position - transform.position);
+            }
+            else 
+                transform.rotation = Quaternion.Euler(0f, currentAngle, 0f);
         
             // Move 
             moveDirection = Quaternion.Euler(0, cameraAngleOffset.y, 0) * new Vector3(input.x, 0f, input.y);
@@ -142,16 +158,16 @@ public class PlayerController : MonoBehaviour {
         moveDirection = new Vector3(input.x, 0f, input.y).normalized;
     }
 
-    // public void OnFocus(InputAction.CallbackContext context) {
-    //     if (context.performed) {
-    //         SetCameraFocus(true);
-    //         isFocus = true;
-    //     }
-    //     else if (context.canceled) {
-    //         SetCameraFocus(false);
-    //         isFocus = false;
-    //     }
-    // }
+    public void OnFocus(InputAction.CallbackContext context) {
+        if (context.performed) {
+            // SetCameraFocus(true);
+            isFocus = true;
+        }
+        else if (context.canceled) {
+            // SetCameraFocus(false);
+            isFocus = false;
+        }
+    }
 
     public void OnCameraRotate(InputAction.CallbackContext context) {
         if (context.started) SetCameraRotate();
@@ -195,7 +211,33 @@ public class PlayerController : MonoBehaviour {
         UpdateDashDisplay();
     }
 
-    public void UpdateDashDisplay() {
+    private void UpdateDashDisplay() {
         dashStatus.text = curDashCount.ToString();
+    }
+
+    private void FindNearestTarget() {
+        if (targetList == null) return;
+        
+        hasTarget = false;
+        foreach (var v in targetList) {
+            if ((Vector3.Distance(v.transform.position, transform.position) > focusRange)) continue;
+            if (focusTarget == null) {
+                focusTarget = v;
+                hasTarget = true;
+                break;
+            }
+            else if (Vector3.Distance(v.transform.position, transform.position) <
+                     Vector3.Distance(focusTarget.transform.position, transform.position)) {
+                focusTarget = v;
+                hasTarget = true;
+            }
+        }
+
+        if (hasTarget == false) focusTarget = null;
+    }
+
+    private void OnDrawGizmos() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, focusTarget.transform.position);
     }
 }
