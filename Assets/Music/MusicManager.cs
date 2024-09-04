@@ -20,7 +20,7 @@ public class MusicManager : MonoBehaviour {
     
     [Header("Components")]
     public GameObject player;
-
+ 
     [Header("Others")]
     private bool isPlaying = false;
 

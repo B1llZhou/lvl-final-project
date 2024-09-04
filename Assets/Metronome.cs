@@ -7,6 +7,7 @@ public class Metronome : MonoBehaviour {
     public MusicManager musicManager;
     public GameObject indicator;
     public GameObject countDownText;
+    public GameObject instructionText;
     public float twinkleDuration = 0.2f;
     public float countDownDuration = 1f;
     public bool canTwinkle = false;
@@ -16,11 +17,13 @@ public class Metronome : MonoBehaviour {
     private void Start() {
         if (indicator) indicator.SetActive(false);
         if (countDownText) countDownText.SetActive(false);
+        if (instructionText) instructionText.SetActive(true);
     }
 
     private void Update()
     {
         if (!isPlaying && Input.GetKeyDown(KeyCode.P)) {
+            instructionText.SetActive(false);
             StartCoroutine(ShowCountDown());
             Invoke("EnableTwinkle", musicManager.GetBeatLength() * 4);
             isPlaying = true;
@@ -36,7 +39,7 @@ public class Metronome : MonoBehaviour {
     private IEnumerator Twinkle() {
         yield return new WaitForSeconds(twinkleOffset);
         indicator.SetActive(true);
-        Debug.Log("Time: " + Time.time + "; " + "BeatCount: " + musicManager.BeatCount());
+        // Debug.Log("Time: " + Time.time + "; " + "BeatCount: " + musicManager.BeatCount());
         yield return new WaitForSeconds(twinkleDuration);
         indicator.SetActive(false);
     }

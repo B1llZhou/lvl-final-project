@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Ability : MonoBehaviour
 {
-    public GameObject model;
+    public GameObject[] hitboxes;
     public float attackDuration;
     public List<AudioClip> audioClips = new List<AudioClip>();
     public AudioSource audioSource;
@@ -19,26 +19,30 @@ public class Ability : MonoBehaviour
 
     private void Start()
     {
-        model.gameObject.SetActive(false);
+        foreach (var v in hitboxes)
+        {
+            v.SetActive(false);
+        }
 
         musicManager = FindObjectOfType<MusicManager>();
         beatLength = musicManager.GetBeatLength();
         delayOffset = musicManager.GetDelayOffset();
     }
 
-    public bool Release(int comboSeq = 0) {
-        if (releaseCo != null) {
-            //SetAbilityOn(false);
-            //releaseCo = null;   
-            return false;
-        }
+    public bool Release(int comboSeq = 0, float skipTime = 0f) {
+        // if (releaseCo != null) {
+        //     //SetAbilityOn(false);
+        //     //releaseCo = null;   
+        //     return false;
+        // }
         
-        releaseCo = StartCoroutine(ReleaseCo(comboSeq));
-
+        // releaseCo = StartCoroutine(ReleaseCo(comboSeq));
+        
+        StartCoroutine(ReleaseCo(comboSeq, skipTime));
         return true;
     }
 
-    private IEnumerator ReleaseCo(int comboSeq = 0) {
+    private IEnumerator ReleaseCo(int comboSeq = 0, float skipTime = 0f) {
         attackDuration = comboSeq switch {
             0 => beatLength * 2,
             1 => beatLength * 2,
@@ -46,31 +50,50 @@ public class Ability : MonoBehaviour
             _ => beatLength * 2
         };
 
-        SetAbilityOn(true, comboSeq);
-        // Debug.Log("Start atk");
-        // musicManager.IsOnBeat();
-        // Debug.Log("Atk START: " + musicManager.delay);
-        
-        yield return new WaitForSeconds(attackDuration);
-        
-        SetAbilityOn(false);
-        // musicManager.IsOnBeat();
-        // Debug.Log("Atk END: " + musicManager.delay);
+        SetAbilityOn(true, comboSeq, skipTime);
+        yield return new WaitForSeconds(attackDuration - skipTime);
+        SetAbilityOn(false, comboSeq, skipTime);
         
         releaseCo = null;
     }
 
-    private void SetAbilityOn(bool b, int comboSeq = 0) {
-        if (model != null) {
-            model.gameObject.SetActive(b);
+    private void SetAbilityOn(bool b, int comboSeq = 0, float skipTime = 0f) {
+        if (hitboxes != null) {
+            hitboxes[comboSeq].SetActive(b);
+            StartCoroutine(HitboxMaterialChange(comboSeq));
         }
 
         if (b && audioSource != null) {
-            if (comboSeq < audioClips.Count) {
-                audioSource.PlayOneShot(audioClips[comboSeq]);
-            } else {
-                audioSource.PlayOneShot(audioClips[audioClips.Count-1]);
+            if (comboSeq < audioClips.Count)
+            {
+                audioSource.clip = audioClips[comboSeq];
+                if (skipTime != 0) audioSource.time = skipTime;
+                audioSource.Play();
+                Debug.Log(skipTime);
+            } 
+            else {
+                audioSource.clip = audioClips[^1];
+                if (skipTime != 0) audioSource.time = skipTime;
+                audioSource.Play();
             }
         }
+    }
+
+    private IEnumerator HitboxMaterialChange(int comboSeq)
+    {
+        var waitTime = comboSeq switch
+        {
+            0 => beatLength * 1,
+            1 => beatLength * 1,
+            2 => beatLength * 2,
+            _ => beatLength * 1
+        };
+        Renderer renderer = hitboxes[comboSeq].GetComponent<Renderer>();
+        var color = renderer.material.color;
+        color.a = 0.4f;
+        renderer.material.color = color;
+        yield return new WaitForSeconds(waitTime);
+        color.a = 1f;
+        renderer.material.color = color;
     }
 }
