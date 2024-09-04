@@ -8,6 +8,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 
@@ -54,12 +55,6 @@ public class PlayerController : MonoBehaviour {
     public int maxDashBeforeClearCombo = 2;
     private Coroutine dashCo = null;
     private int curDashCount = 0;
-
-    [Header("Target System")]
-    private GameObject[] targetList;
-    private GameObject focusTarget;
-    public float focusRange = 5f;
-    public bool hasTarget;
     
     [Header("Others")]
     public float turnSmoothTime = 0.1f;
@@ -83,16 +78,15 @@ public class PlayerController : MonoBehaviour {
         if (abilityControl == null) {
             abilityControl = gameObject.GetComponent<CharacterAbilityControl>();
         }
-
-        targetList ??= GameObject.FindGameObjectsWithTag("Enemy");
         
         UpdateDashDisplay();
     }
 
     private void Update() {
-        FindNearestTarget();
         MoveByNavMesh();
-        currentVcam = cinemachineBrain.ActiveVirtualCamera.VirtualCameraGameObject.transform;
+        if (cinemachineBrain) currentVcam = cinemachineBrain.ActiveVirtualCamera.VirtualCameraGameObject.transform;
+        
+        if (Input.GetKeyDown(KeyCode.R)) ReloadScene();
     }
 
     private void MoveByNavMesh() {
@@ -104,12 +98,7 @@ public class PlayerController : MonoBehaviour {
             var targetAngle = cameraAngleOffset.y + Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg;
             var currentAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity,
                 turnSmoothTime);
-            if (isFocus) {
-                if (focusTarget != null)
-                    transform.rotation = Quaternion.LookRotation(focusTarget.transform.position - transform.position);
-            }
-            else 
-                transform.rotation = Quaternion.Euler(0f, currentAngle, 0f);
+            if (!isFocus) transform.rotation = Quaternion.Euler(0f, currentAngle, 0f);
         
             // Move 
             moveDirection = Quaternion.Euler(0, cameraAngleOffset.y, 0) * new Vector3(input.x, 0f, input.y);
@@ -132,27 +121,13 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    // private void SetCameraFocus(bool focusState) {
-    //     var targetAngle = currentVcam.eulerAngles;
-    //     targetAngle.x = focusState ? camAngleFocus : camAngleNormal;
-    //     currentVcam.DORotate(targetAngle, focusTransitionTime);
-    // }
-
     private void SetCameraRotate() {
         var targetAngle = currentVcam.eulerAngles;
         targetAngle.y = cameraRotateState ? -45f : 45f;
         currentVcam.DORotate(targetAngle, rotateTransitionTime);
         cameraRotateState = !cameraRotateState;
     }
-
-    // private void FreeLook() {
-    //     var currentX = currentVcam.localEulerAngles.x;
-    //     var currentY = currentVcam.localEulerAngles.y;
-    //     var currentZ = currentVcam.localEulerAngles.z;
-    //     currentVcam.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
-    // }
     
-
     public void OnMove(InputAction.CallbackContext context) {
         input = context.ReadValue<Vector2>();
         moveDirection = new Vector3(input.x, 0f, input.y).normalized;
@@ -181,10 +156,6 @@ public class PlayerController : MonoBehaviour {
         if (context.started) Application.Quit();
     }
 
-    // public void OnLookX(InputAction.CallbackContext context) {
-    //     mouseX = context.ReadValue<float>();
-    // }
-
     public void OnSprint(InputAction.CallbackContext context) {
         if (context.performed) isRunning = true;
         else if (context.canceled) isRunning = false;
@@ -193,7 +164,10 @@ public class PlayerController : MonoBehaviour {
     private IEnumerator DashCoroutine() {
         float startTime = Time.time;
         while (Time.time < startTime + dashTime) {
-            transform.position += transform.forward * dashSpeed * Time.deltaTime;
+            if (velocity != Vector3.zero) 
+                transform.position += velocity.normalized * (dashSpeed * Time.deltaTime);
+            else 
+                transform.position += transform.forward * (dashSpeed * Time.deltaTime);
             //transform.Translate(transform.TransformDirection(Vector3.forward) * dashSpeed * Time.deltaTime);
             yield return null; 
         }
@@ -215,29 +189,7 @@ public class PlayerController : MonoBehaviour {
         dashStatus.text = curDashCount.ToString();
     }
 
-    private void FindNearestTarget() {
-        if (targetList == null) return;
-        
-        hasTarget = false;
-        foreach (var v in targetList) {
-            if ((Vector3.Distance(v.transform.position, transform.position) > focusRange)) continue;
-            if (focusTarget == null) {
-                focusTarget = v;
-                hasTarget = true;
-                break;
-            }
-            else if (Vector3.Distance(v.transform.position, transform.position) <
-                     Vector3.Distance(focusTarget.transform.position, transform.position)) {
-                focusTarget = v;
-                hasTarget = true;
-            }
-        }
-
-        if (hasTarget == false) focusTarget = null;
-    }
-
-    private void OnDrawGizmos() {
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, focusTarget.transform.position);
+    private void ReloadScene() {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

@@ -51,7 +51,7 @@ public class CameraManager : MonoBehaviour {
         Cursor.visible = false;
 
         if (debugCamera) FreeLook();
-        if (brain != null) currentVCam = brain.ActiveVirtualCamera.VirtualCameraGameObject;
+        if (brain) currentVCam = brain.ActiveVirtualCamera.VirtualCameraGameObject;
     }
 
     private void SetCameraFocus(bool isFocus) {

@@ -1,7 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
+using TMPro;
+using Unity.VisualScripting;
 
 public enum EAttackMethod { 
     Guitar,
@@ -23,28 +27,52 @@ public class CharacterAbilityControl : MonoBehaviour
     private float lastAddSeqTime;
     private float lastSetComboTextTime;
 
+    [Header("New Combo System")]
+    private List<EAttackMethod> currentCombo = new List<EAttackMethod>();
+    private bool canCombo = true;
+    public MusicManager musicManager;
+    private float beatLength;
+    private float delayOffset = 0f;
+    private Coroutine attackCoroutine;
+    public GameObject timingFeedback01;
+    public GameObject timingFeedback02;
+    public GameObject timingFeedback03;
+    
+    private void Start() {
+        musicManager = FindObjectOfType<MusicManager>();
+        beatLength = musicManager.GetBeatLength();
+        delayOffset = musicManager.GetDelayOffset();
+
+        timingFeedback01.SetActive(false);
+        timingFeedback02.SetActive(false);
+        timingFeedback03.SetActive(false);
+    }
+
     private void Update() {
         if (Input.GetKeyDown(KeyCode.J)) {
-            if (guitar.Release(curSeq.Count)) {
-
-                AddSeq(EAttackMethod.Guitar);
-            };
+            // if (guitar.Release(curSeq.Count)) {
+            //
+            //     AddSeq(EAttackMethod.Guitar);
+            // };
+            
+            
+            StartCoroutine(WaitUntilBeat());
         }
 
         if (Input.GetKeyDown(KeyCode.K))  {
-            if (keyboard.Release(curSeq.Count)) {
-
-                AddSeq(EAttackMethod.Keyboard);
-            }
-            
+            // if (keyboard.Release(curSeq.Count)) {
+            //
+            //     AddSeq(EAttackMethod.Keyboard);
+            // }
+            DrumAttack();
         }
 
-        if (Input.GetKeyDown(KeyCode.L)) {
-            if (drum.Release(curSeq.Count)) {
-
-                AddSeq(EAttackMethod.Drum);
-            }
-        }
+        // if (Input.GetKeyDown(KeyCode.L)) {
+        //     if (drum.Release(curSeq.Count)) {
+        //
+        //         AddSeq(EAttackMethod.Drum);
+        //     }
+        // }
 
         if (curSeq.Count > 0 && Time.time >= lastAddSeqTime + clearSeqInterval) {
             ClearAbilitySeq();
@@ -70,9 +98,9 @@ public class CharacterAbilityControl : MonoBehaviour
         curSeq.Add(method);
         lastAddSeqTime = Time.time;
 
-        LogCurSeq();
+        // LogCurSeq();
 
-        CheckAbilitySeq();
+        // CheckAbilitySeq();
     }
 
     private void LogCurSeq() {
@@ -157,5 +185,89 @@ public class CharacterAbilityControl : MonoBehaviour
         comboText.gameObject.SetActive(true);
         lastSetComboTextTime = Time.time;
         Debug.Log(text);
+    }
+    
+    /// <summary>
+    /// Below are new stuffs
+    /// </summary>
+
+    public void ClearCurrentCombo() {
+        currentCombo.Clear();
+        // Debug.Log("Cleared combo");
+    }
+
+    private void AddCombo(EAttackMethod method) {
+        var guitarCount = currentCombo.Count(n => n == EAttackMethod.Guitar);
+        var drumCount = currentCombo.Count(n => n == EAttackMethod.Drum);
+
+        // Define what sequence of combos are allowed
+        switch (method) {
+            case EAttackMethod.Drum: {
+                if (drumCount >= 3) ClearCurrentCombo();
+                break;
+            }
+            case EAttackMethod.Guitar: {
+                if (drumCount >= 3 || guitarCount >= 3) ClearCurrentCombo();
+                break;
+            }
+        }
+
+        currentCombo.Add(method);
+    }
+
+    private void GuitarAttack() {
+        if (!canCombo) return;
+        
+        AddCombo(EAttackMethod.Guitar);
+        var comboSequence = currentCombo.Count(n => n == EAttackMethod.Guitar);
+        // guitar.Release(comboSequence - 1);
+        guitar.Release();
+        // Debug.Log("Guitar attack no." + comboSequence);
+    }
+
+    private void DrumAttack() {
+        if (!canCombo) return;
+        
+        AddCombo(EAttackMethod.Drum);
+        var comboSequence = currentCombo.Count(n => n == EAttackMethod.Drum);
+        drum.Release(comboSequence - 1);
+        // Debug.Log("Drum attack no." + comboSequence);
+    }
+
+    private IEnumerator WaitUntilBeat() {
+        var curTime = Time.time;
+        var isOnBeat = musicManager.IsOnBeat();
+        var beatCount = curTime / beatLength;
+        var delay = beatCount - Math.Round(beatCount);
+
+        StartCoroutine(ShowFeedbackText(delay));
+        
+        if (!isOnBeat) {
+            var waitTime = Mathf.Ceil(beatCount) * beatLength - curTime;
+            // Debug.Log("Wait time: " + waitTime);
+            yield return new WaitForSeconds(waitTime);
+            Debug.Log(musicManager.IsOnBeat());
+        }
+        GuitarAttack();
+    }
+
+    private IEnumerator ShowFeedbackText(double delay) {
+        if (Math.Abs(delay) <= 0.1f) {
+            timingFeedback01.SetActive(true);
+            // timingFeedback02.SetActive(false);
+            yield return new WaitForSeconds(0.5f);
+            timingFeedback01.SetActive(false);
+        }
+        else if (Math.Abs(delay) <= 0.2f) {
+            timingFeedback02.SetActive(true);
+            // timingFeedback01.SetActive(false);
+            yield return new WaitForSeconds(0.5f);
+            timingFeedback02.SetActive(false);
+        }
+        else {
+            timingFeedback03.SetActive(true);
+            yield return new WaitForSeconds(0.5f);
+            timingFeedback03.SetActive(false);
+        }
     }
 }
