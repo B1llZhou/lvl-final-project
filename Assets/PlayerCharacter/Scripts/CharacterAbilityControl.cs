@@ -235,15 +235,14 @@ public class CharacterAbilityControl : MonoBehaviour
     }
 
     private IEnumerator WaitUntilBeat() {
-        var curTime = Time.time;
-        var isOnBeat = musicManager.IsOnBeat();
-        var beatCount = curTime / beatLength;
-        var delay = beatCount - Math.Round(beatCount);
+        var dif = musicManager.DifferenceFromBeat();
+        StartCoroutine(ShowFeedbackText(dif));
 
-        StartCoroutine(ShowFeedbackText(delay));
+        var isOnBeat = musicManager.IsOnBeat();
+        var beatCount = musicManager.BeatCount();
         
         if (!isOnBeat) {
-            var waitTime = Mathf.Ceil(beatCount) * beatLength - curTime;
+            var waitTime = Mathf.Ceil(beatCount) * beatLength - Time.time;
             // Debug.Log("Wait time: " + waitTime);
             yield return new WaitForSeconds(waitTime);
             Debug.Log(musicManager.IsOnBeat());
@@ -251,22 +250,22 @@ public class CharacterAbilityControl : MonoBehaviour
         GuitarAttack();
     }
 
-    private IEnumerator ShowFeedbackText(double delay) {
-        if (Math.Abs(delay) <= 0.1f) {
+    private IEnumerator ShowFeedbackText(double dif) {
+        if (Math.Abs(dif) <= musicManager.onBeatAccuracy) {
             timingFeedback01.SetActive(true);
             // timingFeedback02.SetActive(false);
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.3f);
             timingFeedback01.SetActive(false);
         }
-        else if (Math.Abs(delay) <= 0.2f) {
+        else if (Math.Abs(dif) <= musicManager.onBeatAccuracy * 2) {
             timingFeedback02.SetActive(true);
             // timingFeedback01.SetActive(false);
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.3f);
             timingFeedback02.SetActive(false);
         }
         else {
             timingFeedback03.SetActive(true);
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.3f);
             timingFeedback03.SetActive(false);
         }
     }
