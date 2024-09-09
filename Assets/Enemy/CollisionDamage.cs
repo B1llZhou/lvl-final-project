@@ -9,7 +9,7 @@ public class CollisionDamage : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag.Equals("Player"))
+        if (gameObject.tag.Equals("EnemyAttack") && other.gameObject.tag.Equals("Player"))
         {
             other.GetComponent<Health>().TakeDamage(damage);
 
@@ -17,5 +17,17 @@ public class CollisionDamage : MonoBehaviour
             Vector3 knockbackDir = new Vector3(targetDir.x, 0, targetDir.z);
             // other.GetComponent<CharacterControls>().ApplyKnockback(knockbackDir, 10);
         }
+
+        if (gameObject.tag.Equals("PlayerAttack") && other.gameObject.tag.Equals("Enemy"))
+        {
+            other.GetComponent<Health>().TakeDamage(damage);
+
+            Vector3 targetDir = other.transform.position - transform.position;
+            Vector3 knockbackDir = new Vector3(targetDir.x, 0, targetDir.z);
+            // other.GetComponent<CharacterControls>().ApplyKnockback(knockbackDir, 10);
+            
+            Debug.Log("Hit enemy");
+        }
+
     }
 }

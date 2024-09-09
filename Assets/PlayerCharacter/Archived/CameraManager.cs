@@ -28,7 +28,7 @@ public class CameraManager : MonoBehaviour {
     [SerializeField][Range(0.01f, 0.1f)] public float sensitivityZoom = 0.3f;
     public bool debugCamera;
     private float mouseX;
-    private float zoom;
+    [SerializeField] private float zoom;
 
     [Header("Current Info")]
     public bool isFocus;
@@ -51,7 +51,7 @@ public class CameraManager : MonoBehaviour {
         Cursor.visible = false;
 
         if (debugCamera) FreeLook();
-        if (brain) currentVCam = brain.ActiveVirtualCamera.VirtualCameraGameObject;
+        if (brain.ActiveVirtualCamera != null) currentVCam = brain.ActiveVirtualCamera.VirtualCameraGameObject;
     }
 
     private void SetCameraFocus(bool isFocus) {
@@ -72,7 +72,7 @@ public class CameraManager : MonoBehaviour {
         var currentZ = vCamEuler.z;
         
         // Rotate
-        currentVCam.transform.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
+        // currentVCam.transform.localEulerAngles = new Vector3(currentX, currentY + mouseX * sensitivityX * Time.deltaTime, currentZ);
 
         // Zoom
         var vCam = currentVCam.GetComponent<CinemachineVirtualCamera>();

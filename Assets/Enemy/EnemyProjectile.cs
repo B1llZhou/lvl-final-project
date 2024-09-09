@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,5 +20,13 @@ public class EnemyProjectile : MonoBehaviour
             Destroy(gameObject);
         }
         transform.position += transform.forward * Time.deltaTime * speed;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag.Equals("Player") || other.gameObject.tag.Equals("PlayerAttack"))
+        {
+            Destroy(gameObject);
+        }
     }
 }

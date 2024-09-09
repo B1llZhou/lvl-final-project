@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class Ability : MonoBehaviour
 {
+    [Header("Components")]
     public GameObject[] hitboxes;
     public float attackDuration;
     public List<AudioClip> audioClips = new List<AudioClip>();
@@ -60,7 +61,7 @@ public class Ability : MonoBehaviour
     private void SetAbilityOn(bool b, int comboSeq = 0, float skipTime = 0f) {
         if (hitboxes != null) {
             hitboxes[comboSeq].SetActive(b);
-            StartCoroutine(HitboxMaterialChange(comboSeq));
+            StartCoroutine(HiboxChange(comboSeq));
         }
 
         if (b && audioSource != null) {
@@ -69,7 +70,7 @@ public class Ability : MonoBehaviour
                 audioSource.clip = audioClips[comboSeq];
                 if (skipTime != 0) audioSource.time = skipTime;
                 audioSource.Play();
-                Debug.Log(skipTime);
+                // Debug.Log(skipTime);
             } 
             else {
                 audioSource.clip = audioClips[^1];
@@ -79,7 +80,7 @@ public class Ability : MonoBehaviour
         }
     }
 
-    private IEnumerator HitboxMaterialChange(int comboSeq)
+    private IEnumerator HiboxChange(int comboSeq)
     {
         var waitTime = comboSeq switch
         {
@@ -88,11 +89,15 @@ public class Ability : MonoBehaviour
             2 => beatLength * 2,
             _ => beatLength * 1
         };
+        var collider = hitboxes[comboSeq].GetComponent<Collider>();
+        if (collider) collider.enabled = false;
+        
         Renderer renderer = hitboxes[comboSeq].GetComponent<Renderer>();
         var color = renderer.material.color;
         color.a = 0.4f;
         renderer.material.color = color;
         yield return new WaitForSeconds(waitTime);
+        if (collider) collider.enabled = true;
         color.a = 1f;
         renderer.material.color = color;
     }

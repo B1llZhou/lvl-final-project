@@ -18,6 +18,7 @@ public class CameraTargetingController : MonoBehaviour {
     private void Update()
     {
         currentTarget = FindNearestTargetable();
+        if (currentTarget == null) return;
         
         if (isFocus) RotateToTarget(currentTarget);
 
@@ -42,8 +43,10 @@ public class CameraTargetingController : MonoBehaviour {
         float shortestDistance = Mathf.Infinity;  // Start with the largest possible distance
         Vector3 currentPosition = transform.position;
 
+        if (allTargetables == null || allTargetables.Length == 0) return null;
         foreach (var target in allTargetables)
         {
+            if (target == null) continue;
             // Check if the target is valid and within the specified range
             if (target.IsTargetable())
             {

@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
 [Serializable]
@@ -34,16 +35,22 @@ struct EnemyBeat
 
 public class EnemyController : MonoBehaviour
 {
+    [Header("Components")]
     [SerializeField]
     GameObject attackZone;
     [SerializeField] 
-    BoxCollider attackCollider;
+    Collider attackCollider;
     [SerializeField]
     GameObject shield;
     SpriteRenderer spriteRenderer;
     CharacterController controller;
     [SerializeField]
     private GameObject projectilePrefab;
+    [SerializeField] private GameObject indicator;
+    private BeatPulse beatPulse;
+
+    [Header("Basic")] 
+    [SerializeField] private bool isActive = false;
 
     [Header("Rhythm Props")]
     [SerializeField]
@@ -96,22 +103,34 @@ public class EnemyController : MonoBehaviour
     [SerializeField]
     private float knockbackDuration = .2f;
     private bool hasKnockback = false;
+    
+    [Header("Target player")]
+    [SerializeField] public float rotationSpeed = 10f;
 
 
     void Start()
     {
         beatLength = 60 / bpm;
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        spriteRenderer.color = Color.white;
-        controller = GetComponent<CharacterController>();
+        attackZone.SetActive(true);
 
+        beatPulse = GetComponent<BeatPulse>();
+        
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (spriteRenderer) spriteRenderer.color = new Color();
+        
+        controller = GetComponent<CharacterController>();
         curBeat = beat1;
     }
 
     void Update()
     {
-        UpdateBeats();
-        UpdateMovement();
+        if (!isActive && Input.GetKeyDown(KeyCode.P)) isActive = true;
+        if (isActive)
+        {
+            UpdateBeats();
+            UpdateMovement();
+            RotateToTarget();
+        }
     }
 
     void UpdateBeats()
@@ -153,10 +172,14 @@ public class EnemyController : MonoBehaviour
 
     void ApplyEnemyBeat(EnemyBeat beat) 
     {
+        beatPulse.StartBeatPulse();
+        
         curBeat = beat;
         shield.SetActive(beat.shielding);
         GetComponent<Health>().canTakeDamage = !beat.shielding;
-        spriteRenderer.color = beat.beatColor;
+        // spriteRenderer.color = beat.beatColor;
+        ChangeIndicatorColor(beat.beatColor);
+        
         if (beat.attacking)
         {
             attackZone.transform.position = transform.position + attackPos;
@@ -247,7 +270,7 @@ public class EnemyController : MonoBehaviour
             {
                 Vector3 move = new Vector3(toPlayerDirection.x, 0, toPlayerDirection.z);
                 controller.Move(move * Time.deltaTime * enemySpeed);
-
+        
                 if (move != Vector3.zero)
                 {
                     gameObject.transform.forward = move;
@@ -272,5 +295,22 @@ public class EnemyController : MonoBehaviour
         yield return new WaitForSeconds(knockbackDuration);
         enemyVelocity = Vector3.zero;
         hasKnockback = false;
+    }
+    
+    private void RotateToTarget() {
+        var player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null) return;
+        
+        Vector3 direction = (player.transform.position - transform.position).normalized;
+        direction.y = 0;
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
+    }
+
+    private void ChangeIndicatorColor(Color color)
+    {
+        if (indicator == null) return;
+        Renderer renderer = indicator.GetComponent<Renderer>();
+        renderer.material.color = color;
     }
 }

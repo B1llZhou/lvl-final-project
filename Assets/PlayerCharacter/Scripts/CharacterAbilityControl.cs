@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEngine.InputSystem;
 using Debug = UnityEngine.Debug;
 
 public enum EAttackMethod { 
@@ -17,6 +18,7 @@ public enum EAttackMethod {
 
 public class CharacterAbilityControl : MonoBehaviour
 {
+    [Header("Previous")]
     public Ability guitar;
     public Ability keyboard;
     public Ability drum;
@@ -30,29 +32,33 @@ public class CharacterAbilityControl : MonoBehaviour
     private float lastSetComboTextTime;
 
     [Header("New Combo System")]
-    private List<EAttackMethod> currentCombo = new List<EAttackMethod>();
     public bool canCombo = true;
+    private List<EAttackMethod> currentCombo = new List<EAttackMethod>();
     public MusicManager musicManager;
     private float beatLength;
     private float delayOffset = 0f;
     private Coroutine attackCoroutine;
-    public GameObject timingFeedback01;
-    public GameObject timingFeedback02;
-    public GameObject timingFeedback03;
     public float globalDelay;
     private float lastComboTime;
     private float comboFinishTime;
     public float comboInputWindow;
     public Text comboSeqText;
+
+    [Header("Score")] 
+    public GameObject[] timingFeedbacks;
+    public int score = 0;
+    private int[] scoreBonus = { 50, 20, 10 };
+    [SerializeField] private Text scoreText;
     
     private void Start() {
         musicManager = FindObjectOfType<MusicManager>();
         beatLength = musicManager.GetBeatLength();
         delayOffset = musicManager.GetDelayOffset();
 
-        timingFeedback01.SetActive(false);
-        timingFeedback02.SetActive(false);
-        timingFeedback03.SetActive(false);
+        foreach (var v in timingFeedbacks)
+        {
+            v.SetActive(false);
+        }
 
         comboInputWindow = beatLength * 2;
     }
@@ -61,27 +67,27 @@ public class CharacterAbilityControl : MonoBehaviour
     {
         globalDelay = musicManager.globalDelay;
         
-        if (Input.GetKeyDown(KeyCode.J)) {
-            // if (guitar.Release(curSeq.Count)) {
-            //
-            //     AddSeq(EAttackMethod.Guitar);
-            // };
-            
-            
-            // StartCoroutine(WaitUntilBeat(EAttackMethod.Guitar));
-            SnapToBeat(EAttackMethod.Guitar);
-        }
-
-        if (Input.GetKeyDown(KeyCode.K))  {
-            // if (keyboard.Release(curSeq.Count)) {
-            //
-            //     AddSeq(EAttackMethod.Keyboard);
-            // }
-            
-            // StartCoroutine(WaitUntilBeat(EAttackMethod.Drum));
-            SnapToBeat(EAttackMethod.Drum);
-
-        }
+        // if (Input.GetKeyDown(KeyCode.J)) {
+        //     // if (guitar.Release(curSeq.Count)) {
+        //     //
+        //     //     AddSeq(EAttackMethod.Guitar);
+        //     // };
+        //     
+        //     
+        //     // StartCoroutine(WaitUntilBeat(EAttackMethod.Guitar));
+        //     SnapToBeat(EAttackMethod.Guitar);
+        // }
+        //
+        // if (Input.GetKeyDown(KeyCode.K))  {
+        //     // if (keyboard.Release(curSeq.Count)) {
+        //     //
+        //     //     AddSeq(EAttackMethod.Keyboard);
+        //     // }
+        //     
+        //     // StartCoroutine(WaitUntilBeat(EAttackMethod.Drum));
+        //     SnapToBeat(EAttackMethod.Drum);
+        //
+        // }
 
         // if (Input.GetKeyDown(KeyCode.L)) {
         //     if (drum.Release(curSeq.Count)) {
@@ -90,14 +96,16 @@ public class CharacterAbilityControl : MonoBehaviour
         //     }
         // }
 
-        if (curSeq.Count > 0 && Time.time >= lastAddSeqTime + clearSeqInterval) {
-            ClearAbilitySeq();
-        }
+        // if (curSeq.Count > 0 && Time.time >= lastAddSeqTime + clearSeqInterval) {
+        //     ClearAbilitySeq();
+        // }
 
         if (currentCombo.Count > 0 && Time.time >= comboFinishTime + comboInputWindow)
         {
             ClearCurrentCombo();
         }
+        
+        ShowScore();
 
         // if (comboText.gameObject.activeInHierarchy && Time.time >= lastSetComboTextTime + clearComboTextInterval) {
         //     comboText.text = "";
@@ -247,40 +255,43 @@ public class CharacterAbilityControl : MonoBehaviour
         comboSeqText.text = "Combo: " + text;
     }
 
-    private void GuitarAttack() {
-        if (!canCombo) return;
-        
-        AddCombo(EAttackMethod.Guitar);
-        var comboSequence = currentCombo.Count(n => n == EAttackMethod.Guitar);
-        guitar.Release(comboSequence - 1);
-
-        StartCoroutine(DisableCombo(comboSequence - 1));
-
-        comboFinishTime = Time.time + comboSequence switch
-        {
-            0 => beatLength * 2,
-            1 => beatLength * 2,
-            2 => beatLength * 4,
-            _ => beatLength * 2
-        };
-        // guitar.Release();
-        // Debug.Log("Guitar attack no." + comboSequence);
-    }
-
-    private void DrumAttack() {
-        if (!canCombo) return;
-        
-        AddCombo(EAttackMethod.Drum);
-        var comboSequence = currentCombo.Count(n => n == EAttackMethod.Drum);
-        drum.Release(comboSequence - 1);
-        // Debug.Log("Drum attack no." + comboSequence);
-    }
+    // private void GuitarAttack() {
+    //     if (!canCombo) return;
+    //     
+    //     AddCombo(EAttackMethod.Guitar);
+    //     var comboSequence = currentCombo.Count(n => n == EAttackMethod.Guitar);
+    //     guitar.Release(comboSequence - 1);
+    //
+    //     StartCoroutine(DisableCombo(comboSequence - 1));
+    //
+    //     comboFinishTime = Time.time + comboSequence switch
+    //     {
+    //         0 => beatLength * 2,
+    //         1 => beatLength * 2,
+    //         2 => beatLength * 4,
+    //         _ => beatLength * 2
+    //     };
+    //     // guitar.Release();
+    //     // Debug.Log("Guitar attack no." + comboSequence);
+    // }
+    //
+    // private void DrumAttack() {
+    //     if (!canCombo) return;
+    //     
+    //     AddCombo(EAttackMethod.Drum);
+    //     var comboSequence = currentCombo.Count(n => n == EAttackMethod.Drum);
+    //     drum.Release(comboSequence - 1);
+    //     // Debug.Log("Drum attack no." + comboSequence);
+    // }
 
     private void DoAttack(EAttackMethod method, float skipTime = 0f)
     {
         if (!canCombo) return;
         
+        var dif = musicManager.DifferenceFromBeat();
+        StartCoroutine(TimingFeedback(dif));
         AddCombo(method);
+        
         var comboSequence = currentCombo.Count(n => n == method);
         switch (method)
         {
@@ -312,7 +323,7 @@ public class CharacterAbilityControl : MonoBehaviour
     private void SnapToBeat(EAttackMethod method)
     {
         var dif = musicManager.DifferenceFromBeat();
-        StartCoroutine(ShowFeedbackText(dif));
+        // StartCoroutine(TimingFeedback(dif));
 
         if (dif < 0)
         {
@@ -329,7 +340,7 @@ public class CharacterAbilityControl : MonoBehaviour
     
     private IEnumerator WaitUntilBeat(EAttackMethod method) {
         // var dif = musicManager.DifferenceFromBeat();
-        // StartCoroutine(ShowFeedbackText(dif));
+        // StartCoroutine(TimingFeedback(dif));
 
         var beatCount = musicManager.BeatCount();
         
@@ -342,24 +353,31 @@ public class CharacterAbilityControl : MonoBehaviour
     }
     
 
-    private IEnumerator ShowFeedbackText(double dif) {
+    private IEnumerator TimingFeedback(double dif) {
         if (Math.Abs(dif) <= musicManager.onBeatAccuracy) {
-            timingFeedback01.SetActive(true);
-            // timingFeedback02.SetActive(false);
+            timingFeedbacks[0].SetActive(true);
+            score += scoreBonus[0];
             yield return new WaitForSeconds(0.3f);
-            timingFeedback01.SetActive(false);
+            timingFeedbacks[0].SetActive(false);
         }
         else if (Math.Abs(dif) <= musicManager.onBeatAccuracy * 2) {
-            timingFeedback02.SetActive(true);
-            // timingFeedback01.SetActive(false);
+            timingFeedbacks[1].SetActive(true);
+            score += scoreBonus[1];
             yield return new WaitForSeconds(0.3f);
-            timingFeedback02.SetActive(false);
+            timingFeedbacks[1].SetActive(false);
         }
         else {
-            timingFeedback03.SetActive(true);
+            timingFeedbacks[2].SetActive(true);
+            score += scoreBonus[2];
             yield return new WaitForSeconds(0.3f);
-            timingFeedback03.SetActive(false);
+            timingFeedbacks[2].SetActive(false);
         }
+    }
+    
+    private void ShowScore()
+    {
+        if (scoreText == null) return;
+        scoreText.text = "Score: " + score.ToString();
     }
 
     private IEnumerator DisableCombo(int comboSeq)
@@ -374,5 +392,29 @@ public class CharacterAbilityControl : MonoBehaviour
         canCombo = false;
         yield return new WaitForSeconds(waitTime);
         canCombo = true;
+    }
+
+    public void OnAttack1(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            SnapToBeat(EAttackMethod.Guitar);
+        }
+    }
+    
+    public void OnAttack2(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            SnapToBeat(EAttackMethod.Drum);
+        }
+    }
+    
+    public void OnAttack3(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            SnapToBeat(EAttackMethod.Keyboard);
+        }
     }
 }

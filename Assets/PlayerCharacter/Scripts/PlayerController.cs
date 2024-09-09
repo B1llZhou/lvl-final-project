@@ -55,6 +55,11 @@ public class PlayerController : MonoBehaviour {
     public int maxDashBeforeClearCombo = 2;
     private Coroutine dashCo = null;
     private int curDashCount = 0;
+
+    [Header("Health")] 
+    public int hp;
+    [SerializeField] private Health health;
+    [SerializeField] private Text healthText;
     
     [Header("Others")]
     public float turnSmoothTime = 0.1f;
@@ -67,6 +72,8 @@ public class PlayerController : MonoBehaviour {
     private void Start() {
         currentSpeed = walkSpeed;
         cameraRotateState = false;
+        
+        health = GetComponent<Health>();
         
         if (controller == null) { 
             controller = gameObject.GetComponent<CharacterController>();
@@ -84,9 +91,12 @@ public class PlayerController : MonoBehaviour {
 
     private void Update() {
         MoveByNavMesh();
-        if (cinemachineBrain) currentVcam = cinemachineBrain.ActiveVirtualCamera.VirtualCameraGameObject.transform;
+        if (cinemachineBrain.ActiveVirtualCamera != null) currentVcam = cinemachineBrain.ActiveVirtualCamera.VirtualCameraGameObject.transform;
         
         if (Input.GetKeyDown(KeyCode.R)) ReloadScene();
+
+        hp = health.hp;
+        // ShowHealth();
     }
 
     private void MoveByNavMesh() {
@@ -112,13 +122,13 @@ public class PlayerController : MonoBehaviour {
         
         agent.Move(velocity * Time.deltaTime);
         
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            if (dashCo == null) {
-
-                dashCo = StartCoroutine(DashCoroutine());
-                AddDashCount();
-            }
-        }
+        // if (Input.GetKeyDown(KeyCode.Space)) {
+        //     if (dashCo == null) {
+        //
+        //         dashCo = StartCoroutine(DashCoroutine());
+        //         AddDashCount();
+        //     }
+        // }
     }
 
     private void SetCameraRotate() {
@@ -133,16 +143,7 @@ public class PlayerController : MonoBehaviour {
         moveDirection = new Vector3(input.x, 0f, input.y).normalized;
     }
 
-    public void OnFocus(InputAction.CallbackContext context) {
-        if (context.performed) {
-            // SetCameraFocus(true);
-            isFocus = true;
-        }
-        else if (context.canceled) {
-            // SetCameraFocus(false);
-            isFocus = false;
-        }
-    }
+    
 
     public void OnCameraRotate(InputAction.CallbackContext context) {
         if (context.started) SetCameraRotate();
@@ -156,10 +157,10 @@ public class PlayerController : MonoBehaviour {
         if (context.started) Application.Quit();
     }
 
-    public void OnSprint(InputAction.CallbackContext context) {
-        if (context.performed) isRunning = true;
-        else if (context.canceled) isRunning = false;
-    }
+    // public void OnSprint(InputAction.CallbackContext context) {
+    //     if (context.performed) isRunning = true;
+    //     else if (context.canceled) isRunning = false;
+    // }
     
     private IEnumerator DashCoroutine() {
         float startTime = Time.time;
@@ -191,5 +192,26 @@ public class PlayerController : MonoBehaviour {
 
     private void ReloadScene() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    
+    public void OnFocus(InputAction.CallbackContext context) {
+        if (context.performed) {
+            // SetCameraFocus(true);
+            isFocus = true;
+        }
+        else if (context.canceled) {
+            // SetCameraFocus(false);
+            isFocus = false;
+        }
+    }
+    
+    public void OnDash(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            if (dashCo != null) return;
+            dashCo = StartCoroutine(DashCoroutine());
+            AddDashCount();
+        }
     }
 }
