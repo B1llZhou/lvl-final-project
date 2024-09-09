@@ -15,7 +15,7 @@ public class MusicManager : MonoBehaviour {
     [Header("Delay setting")]
     [Tooltip("This is for testing delay. Positive means you're late; negative means you're early. Unit is %beat")]
     public double inputDelay;
-    [Tooltip("Increase the value if delay > 0; decrease the value if delay < 0")] public float delayOffset = 0f; // 0.25 to 0.35 is generally good
+    [Tooltip("Increase the value if delay > 0; decrease the value if delay < 0")] public float delayOffset = 0f; 
     public float globalDelay = 0f;
     
     [Header("Components")]
