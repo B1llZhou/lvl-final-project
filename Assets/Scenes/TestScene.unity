@@ -683,9 +683,9 @@ MonoBehaviour:
   - {fileID: 1697544543}
   attackDuration: 0
   audioClips:
-  - {fileID: 8300000, guid: 6e8e6dbc0da574518a94f5676c2c2168, type: 3}
-  - {fileID: 8300000, guid: 23416746ccaf348978d67d1e27e1b927, type: 3}
-  - {fileID: 8300000, guid: e886370ffb3d448018f834033dd3ae7b, type: 3}
+  - {fileID: 8300000, guid: 9d1bbc7d237f3c4469ece95e16325350, type: 3}
+  - {fileID: 8300000, guid: 898f54f80e70aa840ab6781981ab26db, type: 3}
+  - {fileID: 8300000, guid: 29708de9628831847908ebe9e1bb1911, type: 3}
   audioSource: {fileID: 103288794}
   musicManager: {fileID: 0}
 --- !u!1 &230768931
@@ -1881,9 +1881,9 @@ MonoBehaviour:
   - {fileID: 1289260347}
   attackDuration: 0
   audioClips:
-  - {fileID: 8300000, guid: ad24a8ffb1631d94fae0abd4ed74d3bc, type: 3}
-  - {fileID: 8300000, guid: 0bdbc467cf2100348bce8c2c57a0f03b, type: 3}
-  - {fileID: 8300000, guid: 12de4f8603685534bb03912ab0b2ff99, type: 3}
+  - {fileID: 8300000, guid: f3c14d04a8e04ac49bbf9753085504e2, type: 3}
+  - {fileID: 8300000, guid: 16258eb6ecbb4134eb777ae5ecfa803e, type: 3}
+  - {fileID: 8300000, guid: 90a7ca15a8011464ba552133efec3d1b, type: 3}
   audioSource: {fileID: 489258909}
   musicManager: {fileID: 0}
 --- !u!1 &496159605
@@ -9154,6 +9154,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1325951751}
     - target: {fileID: 4804057292944950084, guid: 9b8380b5b6b283d4da83c91fcd070d49, type: 3}
+      propertyPath: rotationSpeed
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4804057292944950084, guid: 9b8380b5b6b283d4da83c91fcd070d49, type: 3}
       propertyPath: beat1.movement
       value: 2
       objectReference: {fileID: 0}
@@ -11416,6 +11420,10 @@ PrefabInstance:
       propertyPath: meshRenderer
       value: 
       objectReference: {fileID: 395731300}
+    - target: {fileID: 4804057292944950084, guid: 9b8380b5b6b283d4da83c91fcd070d49, type: 3}
+      propertyPath: rotationSpeed
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 4804057292944950084, guid: 9b8380b5b6b283d4da83c91fcd070d49, type: 3}
       propertyPath: beat1.movement
       value: 2
