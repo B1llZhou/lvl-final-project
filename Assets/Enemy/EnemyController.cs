@@ -120,6 +120,8 @@ public class EnemyController : MonoBehaviour
         
         controller = GetComponent<CharacterController>();
         curBeat = beat1;
+
+        indicator.SetActive(true);
     }
 
     void Update()

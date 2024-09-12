@@ -86,7 +86,7 @@ public class PlayerController : MonoBehaviour {
             abilityControl = gameObject.GetComponent<CharacterAbilityControl>();
         }
         
-        UpdateDashDisplay();
+        // UpdateDashDisplay();
     }
 
     private void Update() {
@@ -187,7 +187,7 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void UpdateDashDisplay() {
-        dashStatus.text = curDashCount.ToString();
+        if (dashStatus) dashStatus.text = curDashCount.ToString();
     }
 
     private void ReloadScene() {

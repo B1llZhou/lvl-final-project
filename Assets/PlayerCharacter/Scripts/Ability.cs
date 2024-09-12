@@ -18,6 +18,10 @@ public class Ability : MonoBehaviour
     public MusicManager musicManager;
     private float delayOffset = 0f;
 
+    [Header("Attack Property")] 
+    [SerializeField]
+    private bool attackFirst = false;
+
     private void Start()
     {
         foreach (var v in hitboxes)
@@ -90,15 +94,34 @@ public class Ability : MonoBehaviour
             _ => beatLength * 1
         };
         var collider = hitboxes[comboSeq].GetComponent<Collider>();
-        if (collider) collider.enabled = false;
-        
         Renderer renderer = hitboxes[comboSeq].GetComponent<Renderer>();
-        var color = renderer.material.color;
-        color.a = 0.4f;
-        renderer.material.color = color;
-        yield return new WaitForSeconds(waitTime);
-        if (collider) collider.enabled = true;
-        color.a = 1f;
-        renderer.material.color = color;
+
+        if (!attackFirst)
+        {
+            var color = renderer.material.color;
+            color.a = 0.4f;
+            renderer.material.color = color;
+            if (collider) collider.enabled = false;
+            
+            yield return new WaitForSeconds(waitTime);
+            
+            if (collider) collider.enabled = true;
+            color.a = 1f;
+            renderer.material.color = color;
+        }
+        else
+        {
+            var color = renderer.material.color;
+            color.a = 1f;
+            renderer.material.color = color;
+            if (collider) collider.enabled = true;
+            
+            yield return new WaitForSeconds(waitTime);
+            
+            if (collider) collider.enabled = false;
+            color.a = 0.4f;
+            renderer.material.color = color;
+        }
+        
     }
 }
