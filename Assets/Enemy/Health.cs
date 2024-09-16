@@ -26,12 +26,12 @@ public class Health : MonoBehaviour
 
     [SerializeField] private bool canDie = true;
 
-    void Start()
+    private void Start()
     {
         maxhp = hp;
     }
 
-    void Update()
+    private void Update()
     {
         if (iTimer < iTime)
         {
@@ -45,8 +45,8 @@ public class Health : MonoBehaviour
         if (canTakeDamage && iTimer > iTime)
         {
             iTimer = 0f;
-            Debug.Log($"{gameObject.name} took {damage} damage");
             hp -= damage;
+            Debug.Log($"{gameObject.name} took {damage} damage; HP: {hp}");
 
             //Insert die function
             if (canDie && hp <= 0)
@@ -69,21 +69,21 @@ public class Health : MonoBehaviour
 
     private void setDamageMaterial()
     {
-        MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+        MeshRenderer meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>();
         if (meshRenderer == null) return;
         meshRenderer.material = damageMaterial;
     }
 
     private void setRegularMaterial()
     {
-        MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+        MeshRenderer meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>();
         if (meshRenderer == null) return;
         meshRenderer.material = defaultMaterial;
     }
 
     private void ShowHealth()
     {
-        if (healthText != null) healthText.text = "HP: " + hp.ToString();
+        if (healthText != null) healthText.text = $"HP: {hp}";
         if (healthTMP != null)
         {
             healthTMP.text = "HP: " + hp.ToString();

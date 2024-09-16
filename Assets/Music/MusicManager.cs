@@ -23,6 +23,9 @@ public class MusicManager : MonoBehaviour {
  
     [Header("Others")]
     private bool isPlaying = false;
+    
+    [Header("Trigger")] 
+    public bool isTriggerActive = false;
 
     private void Awake() {
         beatLength = 60f / bpm;
@@ -35,11 +38,15 @@ public class MusicManager : MonoBehaviour {
 
     private void Update() {
         TestInputDelay();
-        if (!isPlaying && Input.GetKeyDown(KeyCode.P)) {
-            Invoke("PlayBgm", beatLength * 4 - delayOffset);
-            isPlaying = true;
-            globalDelay = Time.time;
+        if (!isPlaying)
+        {
+            if (Input.GetKeyDown(KeyCode.P) || isTriggerActive) {
+                Invoke("PlayBgm", beatLength * 4 - delayOffset);
+                isPlaying = true;
+                globalDelay = Time.time;
+            }
         }
+        
     }
 
     public float BeatCount() {
@@ -67,7 +74,7 @@ public class MusicManager : MonoBehaviour {
 
     private void PlayBgm() {
         if (audioSource == null) return;
-        audioSource.PlayOneShot(backgroundMusic);
+        audioSource.Play();
         Debug.Log("BGM playing");
     }
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,17 +12,29 @@ public class CameraTargetingController : MonoBehaviour {
     [SerializeField] public float rotationSpeed = 10f;
     [SerializeField] private bool isFocus;
 
+    [Header("Vcam Settings")] 
+    [SerializeField] private CinemachineBrain brain;
+    private CinemachineVirtualCamera currentVcam;
+    private GameObject followCenter;
+    
+    
     private void Start() {
         allTargetables = FindObjectsOfType<Targetable>();
+        followCenter = new GameObject();
     }
 
     private void Update()
     {
+        if (brain) currentVcam = brain.ActiveVirtualCamera.VirtualCameraGameObject.GetComponent<CinemachineVirtualCamera>();
+
         currentTarget = FindNearestTargetable();
         if (currentTarget == null) return;
         
-        if (isFocus) RotateToTarget(currentTarget);
-
+        if (isFocus)
+        {
+            RotateToTarget(currentTarget);
+        }
+        
         foreach (var t in allTargetables) {
             if (isFocus && t == currentTarget) t.OnTargeted();
             else t.OnTargetLost();
@@ -36,7 +49,7 @@ public class CameraTargetingController : MonoBehaviour {
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
     }
-
+    
     private Targetable FindNearestTargetable()
     {
         Targetable nearestTarget = null;

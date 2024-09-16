@@ -106,6 +106,10 @@ public class EnemyController : MonoBehaviour
     
     [Header("Target player")]
     [SerializeField] public float rotationSpeed = 10f;
+    
+    [Header("Trigger")] 
+    public bool isTriggerActive = false;
+    public bool enemyCanMove = false;
 
 
     void Start()
@@ -126,7 +130,10 @@ public class EnemyController : MonoBehaviour
 
     void Update()
     {
-        if (!isActive && Input.GetKeyDown(KeyCode.P)) isActive = true;
+        if (!isActive)
+        {
+            if (Input.GetKeyDown(KeyCode.P) || isTriggerActive) isActive = true;    
+        }
         if (isActive)
         {
             UpdateBeats();
@@ -145,6 +152,7 @@ public class EnemyController : MonoBehaviour
 
             IncrementBeat();
 
+            if (!enemyCanMove) return;
             switch (curBeatNum)
             {
                 case 0:
@@ -253,6 +261,7 @@ public class EnemyController : MonoBehaviour
 
     void UpdateMovement()
     {
+        if (!enemyCanMove) return;
         groundedPlayer = controller.isGrounded;
         if (groundedPlayer && enemyVelocity.y < 0)
         {

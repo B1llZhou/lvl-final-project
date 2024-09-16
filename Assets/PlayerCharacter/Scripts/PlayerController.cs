@@ -56,10 +56,10 @@ public class PlayerController : MonoBehaviour {
     private Coroutine dashCo = null;
     private int curDashCount = 0;
 
-    [Header("Health")] 
-    public int hp;
-    [SerializeField] private Health health;
-    [SerializeField] private Text healthText;
+    // [Header("Health")] 
+    // public int hp;
+    // [SerializeField] private Health health;
+    // [SerializeField] private Text healthText;
     
     [Header("Others")]
     public float turnSmoothTime = 0.1f;
@@ -73,7 +73,7 @@ public class PlayerController : MonoBehaviour {
         currentSpeed = walkSpeed;
         cameraRotateState = false;
         
-        health = GetComponent<Health>();
+        // health = GetComponent<Health>();
         
         if (controller == null) { 
             controller = gameObject.GetComponent<CharacterController>();
@@ -95,7 +95,7 @@ public class PlayerController : MonoBehaviour {
         
         if (Input.GetKeyDown(KeyCode.R)) ReloadScene();
 
-        hp = health.hp;
+        // hp = health.hp;
         // ShowHealth();
     }
 

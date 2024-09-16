@@ -26,7 +26,7 @@ public class CollisionDamage : MonoBehaviour
             Vector3 knockbackDir = new Vector3(targetDir.x, 0, targetDir.z);
             // other.GetComponent<CharacterControls>().ApplyKnockback(knockbackDir, 10);
             
-            Debug.Log("Hit enemy");
+            // Debug.Log("Hit enemy");
         }
 
     }
